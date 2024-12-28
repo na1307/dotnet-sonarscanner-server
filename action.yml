@@ -1,0 +1,98 @@
+name: SonarScanner for .NET - Server
+description: Makes it easy to use SonarScanner for .NET with SonarQube Server.
+
+branding:
+  icon: check
+  color: blue
+
+inputs:
+  sonarscanner-version:
+    description: The version of dotnet-sonarscanner to install (if not already installed). If omitted, the latest version will be used.
+    required: false
+    default: null
+
+  github-token:
+    description: The GitHub token.
+    required: false
+    default: ${{ github.token }}
+
+  project-key:
+    description: The Project key.
+    required: true
+
+  sonar-token:
+    description: The SonarQube token.
+    required: true
+
+  sonar-host-url:
+    description: The SonarQube Server host url.
+    required: true
+
+  jre-provisioning:
+    description: Whether to use automatic JRE provisioning.
+    required: false
+    default: true
+
+  additional-properties:
+    description: Additional properties when begin (Useful when handling test coverage).
+    required: false
+    default: ''
+
+  build-commands:
+    description: Build (and test) commands (dotnet or msbuild).
+    required: true
+
+runs:
+  using: composite
+  steps:
+    - name: Check dotnet
+      id: check-dotnet
+      run: |
+        set +e
+        dotnet --version > /dev/null
+        echo "code=$?" >> $GITHUB_OUTPUT
+        set -e
+      shell: bash
+
+    - name: Install .NET
+      if: steps.check-dotnet.outputs.code != 0
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: 9.0.1xx
+
+    - name: Check dotnet-sonarscanner
+      id: check-sonarscanner
+      run: |
+        set +e
+        dotnet sonarscanner > /dev/null
+        echo "code=$?" >> $GITHUB_OUTPUT
+        set -e
+      shell: bash
+
+    - name: Install latest dotnet-sonarscanner
+      if: steps.check-sonarscanner.outputs.code != 0 && inputs.sonarscanner-version == null
+      run: dotnet tool install dotnet-sonarscanner --global
+      shell: bash
+
+    - name: Install dotnet-sonarscanner with specified version
+      if: steps.check-sonarscanner.outputs.code != 0 && inputs.sonarscanner-version != null
+      run: dotnet tool install dotnet-sonarscanner --global --version ${{ inputs.sonarscanner-version }}
+      shell: bash
+
+    - name: SonarScanner Begin
+      run: dotnet sonarscanner begin -k:"${{ inputs.project-key }}" -d:sonar.token="${{ inputs.sonar-token }}" -d:sonar.host.url="${{ inputs.sonar-host-url }}" -d:sonar.scanner.skipJreProvisioning=${{ ! inputs.jre-provisioning }} ${{ inputs.additional-properties }}
+      shell: bash
+      env:
+        GITHUB_TOKEN: ${{ inputs.github-token }}
+        SONAR_TOKEN: ${{ inputs.sonar-token }}
+
+    - name: Build
+      run: ${{ inputs.build-commands }}
+      shell: bash
+
+    - name: SonarScanner End
+      run: dotnet sonarscanner end -d:sonar.token="${{ inputs.sonar-token }}"
+      shell: bash
+      env:
+        GITHUB_TOKEN: ${{ inputs.github-token }}
+        SONAR_TOKEN: ${{ inputs.sonar-token }}
