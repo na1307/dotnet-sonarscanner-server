@@ -98,7 +98,7 @@ runs:
 
     - name: Build
       run: ${{ inputs.build-commands }}
-      shell: ${{ env.BUILD_SHELL }}
+      shell: ${{ env.BUILD_SHELL || inputs.shell }}
 
     - name: SonarScanner End
       run: dotnet sonarscanner end -d:sonar.token="${{ inputs.sonar-token }}"

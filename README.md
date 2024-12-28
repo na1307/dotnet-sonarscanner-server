@@ -6,7 +6,7 @@
 * Automatically installs required tools and dependencies (e.g., .NET and `dotnet-sonarscanner`).
 * Supports customizable build and test workflows.
 
-If you're using **SonarCloud**, consider using the companion action: [dotnet-sonarscanner-cloud](https://github.com/na1307/dotnet-sonarscanner-cloud).
+If you're using **SonarQube Cloud**, consider using the companion action: [dotnet-sonarscanner-cloud](https://github.com/na1307/dotnet-sonarscanner-cloud).
 
 ## Features
 * **Automatic Tool Detection and Installation:**
