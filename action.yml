@@ -34,7 +34,7 @@ inputs:
     default: true
 
   additional-properties:
-    description: Additional properties when begin (Useful when handling test coverage).
+    description: 'Additional properties when begin (Useful when handling test coverage). Note: You must use hyphens (-) and not slashes (/). Otherwise the action may fail.'
     required: false
     default: ''
 
